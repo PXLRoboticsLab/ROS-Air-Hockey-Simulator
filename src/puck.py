@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 import os
 import pymunk
 import random
@@ -12,7 +12,7 @@ def constant_velocity(body, gravity, damping, dt):
 class Puck:
     dir = os.path.dirname(__file__)
 
-    def __init__(self, x, y, radius, mass, elasticity):
+    def __init__(self, x, y, radius, mass):
         self.image = Image.open(os.path.join(self.dir, '../res/puck.png'))
         self.width, self.height = self.image.size
 

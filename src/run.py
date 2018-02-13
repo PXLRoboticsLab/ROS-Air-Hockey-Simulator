@@ -1,6 +1,6 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 import rospy
-from src.screen import AirhockeyScreen
+from screen import AirhockeyScreen
 
 if __name__ == '__main__':
     rospy.init_node('airhockey')

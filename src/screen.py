@@ -1,18 +1,20 @@
-#!/usr/bin/env python3
-import tkinter as tk
+#!/usr/bin/env python
+import Tkinter as tk
 import os
 import rospy
 import pymunk
-import io
-from src.pod import Pod
-from src.puck import Puck
+import cv2
+import numpy as np
+from pod import Pod
+from puck import Puck
 from PIL import Image, ImageTk
-from sensor_msgs.msg import Image as RosImage
+from sensor_msgs.msg import Image as ImageMsg
+from cv_bridge import CvBridge
 
 
 class AirhockeyScreen:
     dir = os.path.dirname(__file__)
-    FPS = 60
+    FPS = 60.0
 
     player1_keys = ['d', 'q', 'z', 's']
     player2_keys = ['Right', 'Left', 'Up', 'Down']
@@ -20,7 +22,8 @@ class AirhockeyScreen:
     score = {'player_1': 0, 'player_2': 0}
 
     def __init__(self):
-        self.pub_image = rospy.Publisher('/airhockey/simulator/image', RosImage, queue_size=60)
+        self.pub_image = rospy.Publisher('/airhockey/simulator/image', ImageMsg, queue_size=60)
+        self.bridge = CvBridge()
 
         self.space = pymunk.Space()
         self.space.gravity = (0.0, 0.0)
@@ -54,9 +57,9 @@ class AirhockeyScreen:
         self.static_line.elasticity = 1
         self.space.add(self.static_body, self.static_line)
 
-        self.player1_object = Pod(200, 500, 95, 3, 'player1')
-        self.player2_object = Pod(1390, 500, 95, 3, 'player2')
-        self.puck = Puck(795, 500, 55, 1, 0)
+        self.player1_object = Pod(200, 500, 95, 3, 'player1', 'airhockey/player1')
+        self.player2_object = Pod(1390, 500, 95, 3, 'player2', 'airhockey/player2')
+        self.puck = Puck(795, 500, 55, 1)
 
         self.space.add(self.player1_object.body, self.player1_object.shape)
         self.space.add(self.player2_object.body, self.player2_object.shape)
@@ -88,13 +91,13 @@ class AirhockeyScreen:
         self.canvas.image = field
         self.canvas.create_text(799, 75, fill='darkblue', font='Times 80 bold',
                                 text='{}:{}'.format(self.score['player_1'], self.score['player_2']))
+        self.pub_image.publish(self.bridge.cv2_to_imgmsg(cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR), 'bgr8'))
 
     def get_field_image(self, *args):
         img_to_show = Image.new('RGB', (1590, 1000), color=(255, 255, 255, 1))
         img_to_show.paste(self.field_image, (0, 0), self.field_image)
         for game_object in args:
             img_to_show.paste(game_object.image, (game_object.get_position()), game_object.image)
-        img_to_show.save('/home/maarten/Pictures/testing.jpg')
         return img_to_show
 
     def mouse_position(self, event):
