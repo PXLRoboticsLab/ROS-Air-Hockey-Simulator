@@ -91,6 +91,10 @@ class AirhockeyScreen:
         self.canvas.image = field
         self.canvas.create_text(799, 75, fill='darkblue', font='Times 80 bold',
                                 text='{}:{}'.format(self.score['player_1'], self.score['player_2']))
+        """
+        Subscribe to this topic to analyze the board in ROS with OpenCV
+        To move the player publish a message of geometry_msgs.msg.Twist to /airhockey/player1 or /airhockey/player2.
+        """
         self.pub_image.publish(self.bridge.cv2_to_imgmsg(cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR), 'bgr8'))
 
     def get_field_image(self, *args):
