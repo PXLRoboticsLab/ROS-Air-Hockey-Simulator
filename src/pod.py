@@ -13,7 +13,7 @@ class Pod:
 
     def __init__(self, x, y, radius, mass, player, topic):
         self.player = player
-        self.image = Image.open(os.path.join(self.dir, '../res/pod.png'))
+        self.image = Image.open(os.path.join(self.dir, '../res/player_pod.png'))
         self.width, self.height = self.image.size
 
         self.inertia = pymunk.moment_for_circle(mass, 0, radius)

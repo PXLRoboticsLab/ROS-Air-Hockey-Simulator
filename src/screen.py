@@ -38,28 +38,28 @@ class AirhockeyScreen:
         self.field_image = Image.open(os.path.join(self.dir, '../res', 'field.png'))
 
         self.static_body = pymunk.Body(body_type=pymunk.Body.STATIC)
-        self.static_line = pymunk.Segment(self.static_body, (0, 50), (1595, 0), 0.0)
+        self.static_line = pymunk.Segment(self.static_body, (0, 40), (1595, 40), 0.0)
         self.static_line.elasticity = 1
         self.space.add(self.static_body, self.static_line)
 
         self.static_body = pymunk.Body(body_type=pymunk.Body.STATIC)
-        self.static_line = pymunk.Segment(self.static_body, (0, 900), (1595, 1000), 0.0)
+        self.static_line = pymunk.Segment(self.static_body, (0, 960), (1595, 960), 0.0)
         self.static_line.elasticity = 1
         self.space.add(self.static_body, self.static_line)
 
         self.static_body = pymunk.Body(body_type=pymunk.Body.STATIC)
-        self.static_line = pymunk.Segment(self.static_body, (0, 0), (0, 1000), 0.0)
+        self.static_line = pymunk.Segment(self.static_body, (40, 0), (40, 1000), 0.0)
         self.static_line.elasticity = 1
         self.space.add(self.static_body, self.static_line)
 
         self.static_body = pymunk.Body(body_type=pymunk.Body.STATIC)
-        self.static_line = pymunk.Segment(self.static_body, (1590, 0), (1590, 1000), 0.0)
+        self.static_line = pymunk.Segment(self.static_body, (1550, 0), (1550, 1000), 0.0)
         self.static_line.elasticity = 1
         self.space.add(self.static_body, self.static_line)
 
-        self.player1_object = Pod(200, 500, 95, 3, 'player1', 'airhockey/player1')
-        self.player2_object = Pod(1390, 500, 95, 3, 'player2', 'airhockey/player2')
-        self.puck = Puck(795, 500, 55, 1)
+        self.player1_object = Pod(200, 500, 100, 3, 'player1', 'airhockey/player1')
+        self.player2_object = Pod(1390, 500, 100, 3, 'player2', 'airhockey/player2')
+        self.puck = Puck(795, 500, 60, 1)
 
         self.space.add(self.player1_object.body, self.player1_object.shape)
         self.space.add(self.player2_object.body, self.player2_object.shape)
