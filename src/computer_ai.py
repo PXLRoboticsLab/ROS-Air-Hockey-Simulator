@@ -51,7 +51,7 @@ class ComputerAI:
                     c = math.cos(rad)
                     s = math.sin(rad)
                     p1 = (int(center[0] - c * 4096), int(center[1] - s * 4096))
-                    p2 = (int(center[0] + c * 4096), int(center[1] + s * 4096))
+                    p2 = (int(center[0] + c), int(center[1] + s))
 
                     cv2.line(hockey_field, p1, p2, (0, 0, 255), 3, cv2.LINE_AA)
 
