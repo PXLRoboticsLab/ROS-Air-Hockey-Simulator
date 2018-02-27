@@ -33,28 +33,32 @@ class ComputerAI:
                                 param1=100, param2=30,
                                 minRadius=90, maxRadius=95)
 
-        if puck is not None:
-            circles = np.uint16(np.around(puck))
-            for i in circles[0, :]:
-                center = (i[0], i[1])
-                # circle center
-                cv2.circle(hockey_field, center, 1, (0, 100, 100), 3)
-                # circle outline
-                radius = i[2]
-                cv2.circle(hockey_field, center, radius, (255, 0, 255), 3)
+        if self.frames_skipped < 3:
+            self.frames_skipped += 1
+        else:
+            if puck is not None:
+                circles = np.uint16(np.around(puck))
+                for i in circles[0, :]:
+                    center = (i[0], i[1])
+                    # circle center
+                    cv2.circle(hockey_field, center, 1, (0, 100, 100), 3)
+                    # circle outline
+                    radius = i[2]
+                    cv2.circle(hockey_field, center, radius, (255, 0, 255), 3)
 
-                if self.previous_center is not None:
-                    angle = math.degrees(self.calculate_slope(self.previous_center, center))
-                    print('Angle: {}'.format(angle))
+                    if self.previous_center is not None:
+                        rad = self.calculate_slope(self.previous_center, center)
+                        print('Rad: {}'.format(rad))
 
-                    c = math.cos(angle)
-                    s = math.sin(angle)
-                    p1 = (int(center[0] - c * 4096), int(center[1] - s * 4096))
-                    p2 = (int(center[0] + c * 4096), int(center[1] + s * 4096))
+                        c = math.cos(rad)
+                        s = math.sin(rad)
+                        p1 = (int(center[0] - c * 4096), int(center[1] - s * 4096))
+                        p2 = (int(center[0] + c * 4096), int(center[1] + s * 4096))
 
-                    cv2.line(hockey_field, p1, p2, (0, 0, 255), 3, cv2.LINE_AA)
+                        cv2.line(hockey_field, p1, p2, (0, 0, 255), 3, cv2.LINE_AA)
 
-                self.previous_center = center
+                    self.frames_skipped = 0
+                    self.previous_center = center
 
         if pods is not None:
             circles = np.uint16(np.around(pods))
