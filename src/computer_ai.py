@@ -46,7 +46,6 @@ class ComputerAI:
                 if self.previous_center is not None:
                     rad = self.calculate_slope(self.previous_center, center)
                     print(rad)
-                    print('Rad: {}'.format(rad))
 
                     c = math.cos(rad)
                     s = math.sin(rad)
@@ -67,6 +66,8 @@ class ComputerAI:
                     # circle outline
                     radius = i[2]
                     cv2.circle(hockey_field, center, radius, (240, 0, 169), 3)
+                    print(center)
+
 
         cv2.imshow('Segmentation', hockey_field)
         if cv2.waitKey(1) == 27:

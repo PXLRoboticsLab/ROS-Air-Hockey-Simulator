@@ -11,6 +11,11 @@ class Pod:
     _vel_x = 0
     _vel_y = 0
 
+    def player1_callback(self, data):
+        print(data)
+        self._vel_x = data.linear.x
+        self._vel_y = data.linear.y
+
     def __init__(self, x, y, radius, mass, player, topic):
         self.player = player
         self.image = Image.open(os.path.join(self.dir, '../res/player_pod.png'))
@@ -23,6 +28,7 @@ class Pod:
         self.shape.elasticity = 0.95
 
         self.velocity_sub = rospy.Subscriber(topic, Twist, self.ros_velocity)
+
 
     def set_velocity(self, vel_x, vel_y):
         self._vel_x = vel_x
@@ -60,19 +66,19 @@ class Pod:
         x_pos = int(self.body.position.x - self.width / 2)
         y_pos = int(self.body.position.y - self.height / 2)
         return x_pos, y_pos
-
-    def key_pressed(self, event):
-        if 'Right' == event.keysym or event.keysym  == 'd':
-            self._vel_x = 15
-        elif 'Left' == event.keysym or event.keysym == 'q':
-            self._vel_x = -15
-        elif 'Up' == event.keysym or event.keysym == 'z':
-            self._vel_y = -15
-        elif 'Down' == event.keysym or event.keysym == 's':
-            self._vel_y = 15
-
-    def key_released(self, event):
-        if 'Right' == event.keysym or event.keysym == 'd' or 'Left' == event.keysym or event.keysym == 'q':
-            self._vel_x = 0
-        elif 'Up' == event.keysym or event.keysym == 'z' or 'Down' == event.keysym or event.keysym == 's':
-            self._vel_y = 0
+    #
+    # def key_pressed(self, event):
+    #     if 'Right' == event.keysym or event.keysym  == 'd':
+    #         self._vel_x = 15
+    #     elif 'Left' == event.keysym or event.keysym == 'q':
+    #         self._vel_x = -15
+    #     elif 'Up' == event.keysym or event.keysym == 'z':
+    #         self._vel_y = -15
+    #     elif 'Down' == event.keysym or event.keysym == 's':
+    #         self._vel_y = 15
+    #
+    # def key_released(self, event):
+    #     if 'Right' == event.keysym or event.keysym == 'd' or 'Left' == event.keysym or event.keysym == 'q':
+    #         self._vel_x = 0
+    #     elif 'Up' == event.keysym or event.keysym == 'z' or 'Down' == event.keysym or event.keysym == 's':
+    #         self._vel_y = 0

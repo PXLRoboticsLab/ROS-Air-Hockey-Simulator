@@ -8,6 +8,7 @@ import numpy as np
 from pod import Pod
 from puck import Puck
 from PIL import Image, ImageTk
+from geometry_msgs.msg import Twist
 from sensor_msgs.msg import Image as ImageMsg
 from cv_bridge import CvBridge
 
@@ -22,6 +23,8 @@ class AirhockeyScreen:
     score = {'player_1': 0, 'player_2': 0}
 
     def __init__(self):
+        self.pub_player1 = rospy.Publisher('airhockey/simulator/player1', Twist, queue_size=60)
+        self.pub_player2 = rospy.Publisher('airhockey/simulator/player2', Twist, queue_size=60)
         self.pub_image = rospy.Publisher('/airhockey/simulator/image', ImageMsg, queue_size=60)
         self.bridge = CvBridge()
 
@@ -57,8 +60,8 @@ class AirhockeyScreen:
         self.static_line.elasticity = 1
         self.space.add(self.static_body, self.static_line)
 
-        self.player1_object = Pod(200, 500, 100, 3, 'player1', 'airhockey/player1')
-        self.player2_object = Pod(1390, 500, 100, 3, 'player2', 'airhockey/player2')
+        self.player1_object = Pod(200, 500, 100, 3, 'player1', 'airhockey/simulator/player1')
+        self.player2_object = Pod(1390, 500, 100, 3, 'player2', 'airhockey/simulator/player2')
         self.puck = Puck(795, 500, 60, 1)
 
         self.space.add(self.player1_object.body, self.player1_object.shape)
@@ -109,13 +112,48 @@ class AirhockeyScreen:
         self.player1_object.set_position(pos_x, pos_y)
 
     def key_pressed(self, event):
+        motion_command = Twist()
         if event.keysym in self.player1_keys:
-            self.player1_object.key_pressed(event)
+            velocity = self.get_velocity(event)
+            motion_command.linear.x = velocity[0]
+            motion_command.linear.y = velocity[1]
+            self.pub_player1.publish(motion_command)
         elif event.keysym in self.player2_keys:
-            self.player2_object.key_pressed(event)
+            velocity = self.get_velocity(event)
+            motion_command.linear.x = velocity[0]
+            motion_command.linear.y = velocity[1]
+            self.pub_player2.publish(motion_command)
 
     def key_released(self, event):
+        motion_command = Twist()
         if event.keysym in self.player1_keys:
-            self.player1_object.key_released(event)
+            velocity = self.reset_velocity(event)
+            motion_command.linear.x = velocity[0]
+            motion_command.linear.y = velocity[1]
+            self.pub_player1.publish(motion_command)
         elif event.keysym in self.player2_keys:
-            self.player2_object.key_released(event)
+            velocity = self.reset_velocity(event)
+            motion_command.linear.x = velocity[0]
+            motion_command.linear.y = velocity[1]
+            self.pub_player2.publish(motion_command)
+
+    def get_velocity(self, event):
+        _vel_x, _vel_y = 0, 0
+        if 'Right' == event.keysym or event.keysym  == 'd':
+            _vel_x = 15
+        elif 'Left' == event.keysym or event.keysym == 'q':
+            _vel_x = -15
+        elif 'Up' == event.keysym or event.keysym == 'z':
+            _vel_y = -15
+        elif 'Down' == event.keysym or event.keysym == 's':
+            _vel_y = 15
+        return _vel_x, _vel_y
+
+    @staticmethod
+    def reset_velocity(event):
+        _vel_x, _vel_y = 0, 0
+        if 'Right' == event.keysym or event.keysym == 'd' or 'Left' == event.keysym or event.keysym == 'q':
+            _vel_x = 0
+        elif 'Up' == event.keysym or event.keysym == 'z' or 'Down' == event.keysym or event.keysym == 's':
+            _vel_y = 0
+        return _vel_x, _vel_y
