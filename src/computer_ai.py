@@ -5,14 +5,19 @@ import math
 import numpy as np
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
+from geometry_msgs.msg import Twist
 
 
 class ComputerAI:
     def __init__(self):
         self.bridge = CvBridge()
         self.image_sub = rospy.Subscriber('/airhockey/simulator/image', Image, self.callback)
+        self.pub_player1 = rospy.Publisher('airhockey/simulator/player1', Twist, queue_size=60)
+        self.pub_player2 = rospy.Publisher('airhockey/simulator/player2', Twist, queue_size=60)
         self.previous_center = None
         self.frames_skipped = 0
+        self.point1 = 0,0
+        self.point2 = 0,0
 
     def callback(self, data):
         try:
@@ -55,12 +60,17 @@ class ComputerAI:
                     p2 = (int(center[0] + c), int(center[1] + s))
 
                     point = self.calculate_intersect(center, rad, s, c)
-                    point2 = self.calculate_intersect2(center, rad, s, c)
+                    self.point2 = self.calculate_intersect2(center, rad, s, c)
+
+                    if self.point2[0] == 0:
+                        cv2.circle(hockey_field, (self.point2[0]+100,self.point2[1]), 90, (255, 0, 255), 3)
+                    else:
+                        cv2.circle(hockey_field, (self.point2[0]-100,self.point2[1]), 90, (255, 0, 255), 3)
 
                     cv2.circle(hockey_field, point, 10, (255, 0, 255), 3)
-                    cv2.circle(hockey_field, point2, 10, (255, 0, 255), 3)
+                    cv2.circle(hockey_field, self.point2, 10, (255, 0, 255), 3)
                     cv2.putText(hockey_field,'Point {}'.format(point),point, font, 1,(0,255,0),2,cv2.LINE_AA)
-                    cv2.putText(hockey_field,'Point2 {}'.format(point2),point2, font, 1,(0,255,0),2,cv2.LINE_AA)
+                    cv2.putText(hockey_field,'Point2 {}'.format(self.point2),self.point2, font, 1,(0,255,0),2,cv2.LINE_AA)
                     cv2.line(hockey_field, p1, p2, (0, 0, 255), 3, cv2.LINE_AA)
 
                 self.previous_center = center
@@ -76,12 +86,32 @@ class ComputerAI:
                     # circle outline
                     radius = i[2]
                     cv2.circle(hockey_field, center, radius, (240, 0, 169), 3)
+                    self.move_pod(center,self.point2)
 
 
         cv2.imshow('Segmentation', hockey_field)
         if cv2.waitKey(1) == 27:
             exit(0)
 
+    def move_pod(self, pos, point2):
+        if not 0 < point2[1] < 1000 or point2[0] == 0:
+            point2 = point2[0] , 500
+
+        diff = pos[1]-point2[1]
+        print("poddiff: {}".format(diff))
+
+        motion_command = Twist()
+        if diff > 15:
+                    motion_command.linear.x = 0
+                    motion_command.linear.y = -15
+        else:
+            if diff < -15:
+                    motion_command.linear.x = 0
+                    motion_command.linear.y = 15
+            else:
+                motion_command.linear.x = 0
+                motion_command.linear.y = diff
+        self.pub_player2.publish(motion_command)
 
     def calculate_slope(self, point1, point2):
         axis1 = float(point1[1]) - float(point2[1])
@@ -102,7 +132,7 @@ class ComputerAI:
 
     def calculate_intersect2(self, pos, rad, s, c):
         if math.degrees(rad) > 90 or math.degrees(rad) < -90:
-            ydiff = s * (1550-float(pos[0]))
+            ydiff = s * (1550 - float(pos[0]))
             print("Ydiff: {}".format(ydiff))
             print("Point2: {}".format((int(pos[0] - ydiff), 0)))
             return 1550, int(pos[1] - ydiff)
