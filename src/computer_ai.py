@@ -55,9 +55,12 @@ class ComputerAI:
                     p2 = (int(center[0] + c), int(center[1] + s))
 
                     point = self.calculate_intersect(center, rad, s, c)
+                    point2 = self.calculate_intersect2(center, rad, s, c)
 
                     cv2.circle(hockey_field, point, 10, (255, 0, 255), 3)
-                    cv2.putText(hockey_field,'Point {}'.format(point),point, font, 1,(255,255,255),2,cv2.LINE_AA)
+                    cv2.circle(hockey_field, point2, 10, (255, 0, 255), 3)
+                    cv2.putText(hockey_field,'Point {}'.format(point),point, font, 1,(0,255,0),2,cv2.LINE_AA)
+                    cv2.putText(hockey_field,'Point2 {}'.format(point2),point2, font, 1,(0,255,0),2,cv2.LINE_AA)
                     cv2.line(hockey_field, p1, p2, (0, 0, 255), 3, cv2.LINE_AA)
 
                 self.previous_center = center
@@ -87,15 +90,27 @@ class ComputerAI:
 
     def calculate_intersect(self, pos, rad, s, c):
         if rad > 0:
-            xdiff = c * pos[1]
+            xdiff = c * float(pos[1])
             print("Xdiff: {}".format(xdiff))
             print("Point: {}".format((int(pos[0] - xdiff), 0)))
             return int(pos[0] - xdiff), 0
         else:
-            xdiff = c * (1000-pos[1])
+            xdiff = c * (1000.0-float(pos[1]))
             print("Xdiff: {}".format(xdiff))
             print("Point: {}".format((int(pos[0] - xdiff), 1000)))
             return int(pos[0] - xdiff), 1000
+
+    def calculate_intersect2(self, pos, rad, s, c):
+        if math.degrees(rad) > 90 or math.degrees(rad) < -90:
+            ydiff = s * (1550-float(pos[0]))
+            print("Ydiff: {}".format(ydiff))
+            print("Point2: {}".format((int(pos[0] - ydiff), 0)))
+            return 1550, int(pos[1] - ydiff)
+        else:
+            ydiff = s * float(pos[0])
+            print("Ydiff: {}".format(ydiff))
+            print("Point2: {}".format((int(pos[0] - ydiff), 1000)))
+            return 0, int(pos[1] - ydiff)
 
 
 if __name__ == '__main__':
