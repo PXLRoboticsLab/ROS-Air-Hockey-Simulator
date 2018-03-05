@@ -23,6 +23,7 @@ class ComputerAI:
 
         gray = cv2.cvtColor(hockey_field, cv2.COLOR_BGR2GRAY)
         gray = cv2.medianBlur(gray, 5)
+        font = cv2.FONT_HERSHEY_SIMPLEX
 
         rows = gray.shape[0]
         puck = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, rows / 8,
@@ -39,6 +40,7 @@ class ComputerAI:
                 center = (i[0], i[1])
                 # circle center
                 cv2.circle(hockey_field, center, 1, (0, 100, 100), 3)
+                cv2.putText(hockey_field, 'center {}'.format(center), center, font, 1, (255, 255, 0), 2, cv2.LINE_AA)
                 # circle outline
                 radius = i[2]
                 cv2.circle(hockey_field, center, radius, (255, 0, 255), 3)
@@ -46,12 +48,16 @@ class ComputerAI:
                 if self.previous_center is not None:
                     rad = self.calculate_slope(self.previous_center, center)
                     print(rad)
-
+                    cv2.putText(hockey_field, 'angle {}'.format(rad), (center[0], center[1] - 30) , font, 1, (255, 255, 0), 2,cv2.LINE_AA)
                     c = math.cos(rad)
                     s = math.sin(rad)
                     p1 = (int(center[0] - c * 4096), int(center[1] - s * 4096))
                     p2 = (int(center[0] + c), int(center[1] + s))
 
+                    point = self.calculate_intersect(center, rad, s, c)
+
+                    cv2.circle(hockey_field, point, 10, (255, 0, 255), 3)
+                    cv2.putText(hockey_field,'Point {}'.format(point),point, font, 1,(255,255,255),2,cv2.LINE_AA)
                     cv2.line(hockey_field, p1, p2, (0, 0, 255), 3, cv2.LINE_AA)
 
                 self.previous_center = center
@@ -63,10 +69,10 @@ class ComputerAI:
                 if center[0] > 795:
                     # circle center
                     cv2.circle(hockey_field, center, 1, (0, 100, 100), 3)
+                    cv2.putText(hockey_field, 'center {}'.format(center), center, font, 1, (0, 255, 0), 2,cv2.LINE_AA)
                     # circle outline
                     radius = i[2]
                     cv2.circle(hockey_field, center, radius, (240, 0, 169), 3)
-                    print(center)
 
 
         cv2.imshow('Segmentation', hockey_field)
@@ -78,6 +84,18 @@ class ComputerAI:
         axis1 = float(point1[1]) - float(point2[1])
         axis2 = float(point1[0]) - float(point2[0])
         return math.atan2(axis1, axis2)
+
+    def calculate_intersect(self, pos, rad, s, c):
+        if rad > 0:
+            xdiff = c * pos[1]
+            print("Xdiff: {}".format(xdiff))
+            print("Point: {}".format((int(pos[0] - xdiff), 0)))
+            return int(pos[0] - xdiff), 0
+        else:
+            xdiff = c * (1000-pos[1])
+            print("Xdiff: {}".format(xdiff))
+            print("Point: {}".format((int(pos[0] - xdiff), 1000)))
+            return int(pos[0] - xdiff), 1000
 
 
 if __name__ == '__main__':
