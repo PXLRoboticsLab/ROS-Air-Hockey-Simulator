@@ -31,7 +31,7 @@ class Puck:
 
     def check_goal(self, score):
         if 340 <= self.body.position.y <= 660:
-            if (self.body.position.x - 50) <= 0:
+            if (self.body.position.x - 100) <= 0:
                 score['player_2'] += 1
                 self.body.position = 795, 500
             elif (self.body.position.x + 110) >= 1595:
