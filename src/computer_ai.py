@@ -7,7 +7,6 @@ from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
 from geometry_msgs.msg import Twist
 
-
 class ComputerAI:
     def __init__(self):
         self.bridge = CvBridge()
@@ -79,14 +78,17 @@ class ComputerAI:
             circles = np.uint16(np.around(pods))
             for i in circles[0, :]:
                 center = (i[0], i[1])
+                # circle center
+                cv2.circle(hockey_field, center, 1, (0, 100, 100), 3)
+                cv2.putText(hockey_field, 'center {}'.format(center), center, font, 1, (0, 255, 0), 2,cv2.LINE_AA)
+                # circle outline
+                radius = i[2]
+                cv2.circle(hockey_field, center, radius, (240, 0, 169), 3)
+
                 if center[0] > 795:
-                    # circle center
-                    cv2.circle(hockey_field, center, 1, (0, 100, 100), 3)
-                    cv2.putText(hockey_field, 'center {}'.format(center), center, font, 1, (0, 255, 0), 2,cv2.LINE_AA)
-                    # circle outline
-                    radius = i[2]
-                    cv2.circle(hockey_field, center, radius, (240, 0, 169), 3)
                     self.move_pod(center,self.point2)
+                else:
+                    self.move_pod1(center,self.point2)
 
 
         cv2.imshow('Segmentation', hockey_field)
@@ -101,17 +103,38 @@ class ComputerAI:
         print("poddiff: {}".format(diff))
 
         motion_command = Twist()
-        if diff > 15:
+        if diff > 5:
                     motion_command.linear.x = 0
-                    motion_command.linear.y = -15
+                    motion_command.linear.y = -5
         else:
-            if diff < -15:
+            if diff < -5:
                     motion_command.linear.x = 0
-                    motion_command.linear.y = 15
+                    motion_command.linear.y = 5
             else:
                 motion_command.linear.x = 0
                 motion_command.linear.y = diff
         self.pub_player2.publish(motion_command)
+
+    def move_pod1(self, pos, point2):
+        if not 0 < point2[1] < 1000 or point2[0] == 1550:
+            point2 = point2[0] , 500
+
+        diff = pos[1]-point2[1]
+        print("poddiff: {}".format(diff))
+
+        motion_command = Twist()
+        if diff > 5:
+                    motion_command.linear.x = 0
+                    motion_command.linear.y = -5
+        else:
+            if diff < -5:
+                    motion_command.linear.x = 0
+                    motion_command.linear.y = 5
+            else:
+                motion_command.linear.x = 0
+                motion_command.linear.y = diff
+        self.pub_player1.publish(motion_command)
+
 
     def calculate_slope(self, point1, point2):
         axis1 = float(point1[1]) - float(point2[1])
